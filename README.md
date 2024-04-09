@@ -66,3 +66,8 @@ __Note:__ this launch file also launches the `joy` node so do not run it separat
   - Whether to publish `geometry_msgs/msg/TwistStamped` for command velocity messages.
 
 #### Kinetic Computation
+
+Run the computation to start publishing wheel's velocity.
+```
+ros2 run omniwheels_kinetic omniwheels_vel
+```

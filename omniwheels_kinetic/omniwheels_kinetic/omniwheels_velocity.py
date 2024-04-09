@@ -5,6 +5,8 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from omniwheels_interfaces.msg import WheelsVelocity3
 
+from math import cos, sin, radians
+
 
 class Omniwheels_Velocity3(Node):
     def __init__(self):
@@ -21,13 +23,28 @@ class Omniwheels_Velocity3(Node):
         self.get_logger().info('Node has been started')
 
 
+    def scale_list(self, value: list | tuple) -> tuple:
+        raise NotImplemented('Fungsi skala nilai-nilai dari elemen')
+
+
     def wheels_movement(self, x: float, y: float, theta: float) -> tuple[float]:
-        raise NotImplementedError('Berisi fungsi yang merubah kecepatan robot menjadi kecepatan roda')
+        L = 1
+        gama = 30
+        
+        v1 = -y + theta*L
+        v2 = x*cos(radians(gama)) + y*sin(radians(gama)) + theta*L
+        v3 = -x*cos(radians(gama)) + y*sin(radians(gama)) + theta*L
+        
+        # Not Implemented Yet
+        # return self.scale_list((v1, v2, v3))
+    
+        return (v1, v2, v3)
 
 
     def wheels_velocity_info(self):
-        msg = '\n'.join(f'Wheel {i+1}: {self.wheels_vel[i]}' for i in range(3))
-        self.get_logger().info(msg)
+        msg = '\n'.join(f'Wheel {i+1}: {self.wheels_vel_[i]}' for i in range(3))
+        # self.get_logger().info(msg)
+        print('---', 'Translation:', msg, sep='\n')
 
 
     def callback_robot_vel(self, msg: Twist):
@@ -51,7 +68,7 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        print('Node has been stopped')
+        print('\nNode has been stopped')
     else:
         rclpy.shutdown()
 

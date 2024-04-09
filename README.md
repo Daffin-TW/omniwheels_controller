@@ -72,7 +72,7 @@ __Note:__ this launch file also launches the `joy` node so do not run it separat
   - Config file to use
 - `joy_dev (string, default: 'dev/input/js0')`
   - Joystick device to use
-- `config_filepath (string, default: '/opt/ros/<rosdistro>/share/teleop_twist_joy/config/' + LaunchConfig('joy_config') + '.config.yaml')`
+- `config_filepath (string, default: 'teleop_twist_joy/config/' + LaunchConfig('joy_config') + '.config.yaml')`
   - Path to config files
 - `publish_stamped_twist (bool, default: false)`
   - Whether to publish `geometry_msgs/msg/TwistStamped` for command velocity messages.

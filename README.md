@@ -1,7 +1,9 @@
 # omniwheels_controller
 
 ## Topics
+
 ### Joystick
+
 #### Subscribed Topics
 - `joy (sensor_msgs/msg/Joy)`
   - Joystick messages to be translated to velocity commands.
@@ -11,12 +13,14 @@
   - Command velocity messages arising from Joystick commands.
 
 ### Kinetic Computation
+
 #### Subscribed Topics
 - `omniwheel/robot_vel (geometry_msgs/msg/Twist or geometry_msgs/msg/TwistStamped)`
   - Command velocity messages arising from Joystick commands.
 #### Published Topics
 - `omniwheel/wheels_vel (omniwheels_interfaces/msg/WheelsVelocity3)`
-  - Command velocity messages arising from Joystick commands.
+  - Wheels velocity messages from command veloctiy translation.
+
 ## Usage
 
 ### Installation

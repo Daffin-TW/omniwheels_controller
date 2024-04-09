@@ -28,7 +28,7 @@ Run the following command to build the package:
 
 ```
 cd ~/ros_ws
-colcon build --allow-overiding teleop_twist_joy --symlink-install
+colcon build --allow-overriding teleop_twist_joy --symlink-install
 ```
 
 After building the package, open a new terminal and navigate to your workspace. Then, source the overlay by running the following command:

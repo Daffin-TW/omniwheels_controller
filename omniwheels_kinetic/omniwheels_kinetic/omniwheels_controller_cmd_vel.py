@@ -64,9 +64,12 @@ class Omniwheels_Velocity3(Node):
     # Request The Robot to Shoot
     def request_shooting(self):
         if self.client_.service_is_ready():
-            self.get_logger().info('Requesting robot to shoot')
-            self.future_ = self.client_.call_async(self.request_)
-            self.request_status_ = 1
+            if self.request_status_ == 0:
+                self.get_logger().info('Requesting robot to shoot')
+                self.future_ = self.client_.call_async(self.request_)
+                self.request_status_ = 1
+            else:
+                self.get_logger().info('Still waiting a respond from service server')
         else:
             self.get_logger().info('Service is not available')
             return None
@@ -83,7 +86,7 @@ class Omniwheels_Velocity3(Node):
                     f'\nStatus: {self.response_.success}\nMessage: {self.response_.message}'
                 )
             else:
-                self.get_logger().info('Waiting a respond from service server')
+                None
         else:
             None
 
@@ -99,7 +102,7 @@ class Omniwheels_Velocity3(Node):
             'X': msg.buttons[2]
         }
         
-        # Decision to Shoot The Ball
+        # Trigger Button to Shoot The Ball
         if self.shooting_status_ != joystick['X']:
             if self.shooting_status_:
                 self.shooting_status_ = 0

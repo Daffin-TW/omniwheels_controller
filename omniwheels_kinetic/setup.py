@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'omniwheels_vel = omniwheels_kinetic.omniwheels_velocity:main'
+            'omniwheels_controller_full = omniwheels_kinetic.omniwheels_controller_full:main',
+            'omniwheels_controller_cmd_vel = omniwheels_kinetic.omniwheels_controller_cmd_vel:main'
         ],
     },
 )

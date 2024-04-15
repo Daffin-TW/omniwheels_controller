@@ -31,7 +31,7 @@ class Omniwheels_Velocity3(Node):
         length = ((x**2) + (y**2) + (omega**2))**0.5
 
         if length > 1:
-            return (x/length, y/length, omega/(length))
+            return (x/length, y/length, omega/length)
         elif length:
             return (x, y, omega)
         else:
@@ -63,8 +63,8 @@ class Omniwheels_Velocity3(Node):
             self.future_ = self.client_.call_async(self.request_)
             rclpy.spin_until_future_complete(self, self.future_)
             self.get_logger().info(
-                    f'Message: {self.response_.message}, Status: {self.response_.success}'
-                )
+                f'Message: {self.response_.message}, Status: {self.response_.success}'
+            )
             return self.future_.result()
         else:
             self.get_logger().info('Service is not available')

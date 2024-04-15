@@ -13,6 +13,7 @@ class Omniwheels_Velocity3(Node):
         # Constructor
         self.cmd_vel_ = (float(), float(), float())
         self.shooting_status_ = 0
+        self.request_status_ = 0
         self.request_ = Trigger.Request()
         
         # Topics and Client Service
@@ -21,6 +22,9 @@ class Omniwheels_Velocity3(Node):
         self.publisher_ = self.create_publisher(
             Twist, 'cmd_vel', 10)
         self.client_ = self.create_client(Trigger, 'ball_shoot')
+
+        # Timer
+        self.timer_ = self.create_timer(0.5, self.status_shooting_callback)
         
         # Start Info
         self.get_logger().info('Node has been started')
@@ -40,8 +44,8 @@ class Omniwheels_Velocity3(Node):
 
     # Converts Joystick Inputs to Robot Velocity
     def joy_to_cmd_vel(self, joystick: dict[str, float | int], scale: float) -> tuple[float]:
-        v1 = joystick['LEFTX'] * scale
-        v2 = joystick['LEFTY'] * scale
+        v1 = joystick['LEFTY'] * scale
+        v2 = joystick['LEFTX'] * scale
         v3 = joystick['RIGHTX'] * scale
         return (v1, v2, v3)
         
@@ -58,21 +62,34 @@ class Omniwheels_Velocity3(Node):
 
 
     # Request The Robot to Shoot
-    def request_shooting(self) -> Trigger.Response | None:
+    def request_shooting(self):
         if self.client_.service_is_ready():
+            self.get_logger().info('Requesting robot to shoot')
             self.future_ = self.client_.call_async(self.request_)
-            rclpy.spin_until_future_complete(self, self.future_)
-            self.get_logger().info(
-                f'Message: {self.response_.message}, Status: {self.response_.success}'
-            )
-            return self.future_.result()
+            self.request_status_ = 1
         else:
             self.get_logger().info('Service is not available')
             return None
 
 
+    # Timer Callback
+    def status_shooting_callback(self):
+        if self.request_status_:
+            if self.future_.done():
+                self.request_status_ = 0
+                self.response_ = Trigger.Response = self.future_.result()
+                self.get_logger().info('Service server has responded')
+                self.get_logger().info(
+                    f'\nStatus: {self.response_.success}\nMessage: {self.response_.message}'
+                )
+            else:
+                self.get_logger().info('Waiting a respond from service server')
+        else:
+            None
+
+
     # Subscriber Callback
-    def callback_control(self, msg: Joy) -> None:
+    def callback_control(self, msg: Joy):
         joystick = {
             'LEFTX': msg.axes[0],
             'LEFTY': msg.axes[1],
@@ -88,7 +105,7 @@ class Omniwheels_Velocity3(Node):
                 self.shooting_status_ = 0
             else:
                 self.shooting_status_ = 1
-                self.response_ = self.request_shooting()
+                self.request_shooting()
             
         # Determine The Robot Velocity Scaling
         if joystick['RIGHTSHOULDER']:

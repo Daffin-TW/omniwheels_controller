@@ -82,8 +82,8 @@ class Omniwheels_Velocity3(Node):
                 self.request_status_ = 0
                 self.response_ = Trigger.Response = self.future_.result()
                 self.get_logger().info('Service server has responded')
-                self.get_logger().info(
-                    f'\nStatus: {self.response_.success}\nMessage: {self.response_.message}'
+                print(
+                    f'---\nService Respond:\n- Status\t: {self.response_.success}\n- Message\t: {self.response_.message}'
                 )
             else:
                 None

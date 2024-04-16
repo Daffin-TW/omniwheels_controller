@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'omniwheels_controller_full = omniwheels_kinetic.omniwheels_controller_full:main',
-            'omniwheels_controller_cmd_vel = omniwheels_kinetic.omniwheels_controller_cmd_vel:main'
+            'omniwheels_controller_cmd_vel = omniwheels_kinetic.omniwheels_controller_cmd_vel:main',
+            'robot_service_shoot = omniwheels_kinetic.service_node_test:main'
         ],
     },
 )

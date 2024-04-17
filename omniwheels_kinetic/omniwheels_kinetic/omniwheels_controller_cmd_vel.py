@@ -13,6 +13,7 @@ class Omniwheels_Velocity3(Node):
         # Constructor
         self.cmd_vel_ = (float(), float(), float())
         self.stopped_status_ = False
+        self.run_publish_status_ = False
         self.shooting_status_ = False
         self.request_status_ = False
         self.future_ = None
@@ -26,7 +27,8 @@ class Omniwheels_Velocity3(Node):
         self.client_ = self.create_client(Trigger, 'ball_shoot')
 
         # Timer
-        self.timer_ = self.create_timer(0.5, self.status_shooting_callback)
+        self.timer_status_timer_ = self.create_timer(0.5, self.status_shooting_callback)
+        self.timer_publish_cmd_vel_ = self.create_timer(0.08, self.publish_cmd_vel)
         
         # Start Info
         self.get_logger().info('Node has been started')
@@ -48,7 +50,7 @@ class Omniwheels_Velocity3(Node):
     def joy_to_cmd_vel(self, joystick: dict[str, float | int], scale: float) -> tuple[float]:
         v1 = joystick['LEFTY'] * scale
         v2 = joystick['LEFTX'] * scale
-        v3 = joystick['RIGHTX'] * scale
+        v3 = joystick['RIGHTX'] * scale * 6
         return (v1, v2, v3)
         
 
@@ -93,7 +95,7 @@ class Omniwheels_Velocity3(Node):
     def callback_control(self, msg: Joy):
         joystick = {
             'LEFTX': -msg.axes[0],
-            'LEFTY': msg.axes[1],
+            'LEFTY': -msg.axes[1],
             'RIGHTX': msg.axes[3],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
@@ -120,9 +122,8 @@ class Omniwheels_Velocity3(Node):
 
         elif not self.stopped_status_:
             self.cmd_vel_ = (0.0, 0.0, 0.0)
-            self.publish_cmd_vel()
-            self.cmd_vel_info()
             self.stopped_status_ = True
+            self.run_publish_status_ = True
             return None
 
         else:
@@ -131,17 +132,20 @@ class Omniwheels_Velocity3(Node):
         self.cmd_vel_ = self.joy_to_cmd_vel(joystick, scale)
         # self.cmd_vel_ = self.vector_normalization(*self.cmd_vel_)
 
-        self.publish_cmd_vel()
-        self.cmd_vel_info()
-
 
     # Publish Robot Velocity
     def publish_cmd_vel(self):
+        if self.stopped_status_ and not self.run_publish_status_:
+            return None
+
         msg = Twist()
         msg.linear.x = self.cmd_vel_[0]
         msg.linear.y = self.cmd_vel_[1]
         msg.angular.z = self.cmd_vel_[2]
 
+        self.run_publish_status_ = False
+
+        self.cmd_vel_info()
         self.publisher_.publish(msg)
 
 

@@ -12,8 +12,10 @@ class Omniwheels_Velocity3(Node):
 
         # Constructor
         self.cmd_vel_ = (float(), float(), float())
-        self.shooting_status_ = 0
-        self.request_status_ = 0
+        self.stopped_status_ = False
+        self.shooting_status_ = False
+        self.request_status_ = False
+        self.future_ = None
         self.request_ = Trigger.Request()
         
         # Topics and Client Service
@@ -64,29 +66,25 @@ class Omniwheels_Velocity3(Node):
     # Request The Robot to Shoot
     def request_shooting(self):
         if self.client_.service_is_ready():
-            if self.request_status_ == 0:
+            if not self.request_status_:
                 self.get_logger().info('Requesting robot to shoot')
                 self.future_ = self.client_.call_async(self.request_)
-                self.request_status_ = 1
+                self.request_status_ = True
             else:
                 self.get_logger().info('Still waiting a respond from service server')
         else:
             self.get_logger().info('Service is not available')
-            return None
 
 
     # Timer Callback
     def status_shooting_callback(self):
-        if self.request_status_:
-            if self.future_.done():
-                self.request_status_ = 0
-                self.response_ = Trigger.Response = self.future_.result()
-                self.get_logger().info('Service server has responded')
-                print(
-                    f'---\nService Respond:\n- Status\t: {self.response_.success}\n- Message\t: {self.response_.message}'
-                )
-            else:
-                None
+        if self.request_status_ and self.future_.done():
+            self.request_status_ = False
+            self.response_ = self.future_.result()
+            self.get_logger().info('Service server has responded')
+            print(
+                f'---\nService Respond:\n- Status\t: {self.response_.success}\n- Message\t: {self.response_.message}'
+            )
         else:
             None
 
@@ -96,27 +94,38 @@ class Omniwheels_Velocity3(Node):
         joystick = {
             'LEFTX': -msg.axes[0],
             'LEFTY': msg.axes[1],
-            'RIGHTX': -msg.axes[3],
+            'RIGHTX': msg.axes[3],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
-            'X': msg.buttons[2]
+            'X': msg.buttons[2],
+            'A': msg.buttons[1]
         }
         
         # Trigger Button to Shoot The Ball
         if self.shooting_status_ != joystick['X']:
             if self.shooting_status_:
-                self.shooting_status_ = 0
+                self.shooting_status_ = False
             else:
-                self.shooting_status_ = 1
+                self.shooting_status_ = True
                 self.request_shooting()
             
         # Determine The Robot Velocity Scaling
         if joystick['RIGHTSHOULDER']:
             scale = 1.0
+            self.stopped_status_ = False
+
         elif joystick['LEFTSHOULDER']:
             scale = 0.7
+            self.stopped_status_ = False
+
+        elif not self.stopped_status_:
+            self.cmd_vel_ = (0.0, 0.0, 0.0)
+            self.publish_cmd_vel()
+            self.cmd_vel_info()
+            self.stopped_status_ = True
+            return None
+
         else:
-            # Else Not Publishing Anything
             return None
 
         self.cmd_vel_ = self.joy_to_cmd_vel(joystick, scale)

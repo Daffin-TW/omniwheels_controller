@@ -96,7 +96,7 @@ class Omniwheels_Velocity3(Node):
         joystick = {
             'LEFTX': -msg.axes[0],
             'LEFTY': -msg.axes[1],
-            'RIGHTX': msg.axes[3],
+            'RIGHTX': -msg.axes[3],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
             'X': msg.buttons[2],

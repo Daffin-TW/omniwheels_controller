@@ -94,9 +94,9 @@ class Omniwheels_Velocity3(Node):
     # Subscriber Callback
     def callback_control(self, msg: Joy):
         joystick = {
-            'LEFTX': msg.axes[0],
+            'LEFTX': -msg.axes[0],
             'LEFTY': msg.axes[1],
-            'RIGHTX': msg.axes[3],
+            'RIGHTX': -msg.axes[3],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
             'X': msg.buttons[2]
@@ -120,7 +120,7 @@ class Omniwheels_Velocity3(Node):
             return None
 
         self.cmd_vel_ = self.joy_to_cmd_vel(joystick, scale)
-        self.cmd_vel_ = self.vector_normalization(*self.cmd_vel_)
+        # self.cmd_vel_ = self.vector_normalization(*self.cmd_vel_)
 
         self.publish_cmd_vel()
         self.cmd_vel_info()

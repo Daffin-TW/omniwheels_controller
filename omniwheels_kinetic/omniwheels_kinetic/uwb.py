@@ -10,6 +10,7 @@ class UWB(Node):
         super().__init__('uwb_listener')
 
         # Constructor
+        self.subscriber_status_ = False
         self.distance_anchor_1_2_ = 800  # Distance between anchor 1 and anchor 2
         self.tag_position_ = (float(), float())
         self.anchor_1_ = float()
@@ -18,7 +19,8 @@ class UWB(Node):
         self.y_ = float()
 
         # Topics
-        self.subscriber_ = self.create_subscription(UWBAnchor, 'uwb_topic', self.subscriber_callback, 10)
+        self.subscriber_ = self.create_subscription(
+            UWBAnchor, 'uwb_topic', self.subscriber_callback, 10)
         self.publisher_ = self.create_publisher(Point32, 'uwb_coordinate', 10)
 
         # Timer
@@ -50,16 +52,21 @@ class UWB(Node):
     def subscriber_callback(self, msg: UWBAnchor):
         self.anchor_1_ = msg.anchor1
         self.anchor_2_ = msg.anchor2
+        self.subscriber_status_ = True
 
 
     # Publisher Callback
     def publisher_callback(self):
-        self.x_, self.y_ = self.tag_pos(self.anchor_1_, self.anchor_2_, self.distance_anchor_1_2_)
-        point = Point32()
-        point.x = self.x_
-        point.y = self.y_
-        self.get_logger().info(f'Robot Coordinate: ({self.x_}, {self.y_})')
-        self.publisher_.publish(point)
+        if self.subscriber_status_:
+            self.x_, self.y_ = self.tag_pos(
+                self.anchor_1_, self.anchor_2_, self.distance_anchor_1_2_)
+            point = Point32()
+            point.x = self.x_
+            point.y = self.y_
+            self.get_logger().info(f'Robot Coordinate: ({self.x_}, {self.y_})')
+            self.publisher_.publish(point)
+        else:
+            None
 
 
 def main(args=None):

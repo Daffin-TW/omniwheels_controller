@@ -12,7 +12,7 @@ class JoystickToVelocity(Node):
 
         # Constructor
         self.cmd_vel_ = (float(), float(), float())
-        self.stopped_status_ = False
+        self.stopped_status_ = True
         self.run_publish_status_ = False
         self.shooting_status_ = False
         self.request_status_ = False

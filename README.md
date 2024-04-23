@@ -77,3 +77,12 @@ ros2 run omniwheels_kinetic joystick_to_cmd_vel
 ```
 ros2 run omniwheels_kinetic uwb
 ```
+
+### Controls
+
+#### Movement
+Hold `RIGHT SHOULDER` button to enable the robot movement.
+Hold `LEFT SHOULDER` button instead for slower movement.
+
+#### Shooting
+Press `X` button to take a shot.

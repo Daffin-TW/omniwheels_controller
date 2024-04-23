@@ -85,6 +85,7 @@ Hold `RIGHT SHOULDER` button to enable the robot movement.
 Hold `LEFT SHOULDER` button instead for slower movement.
 
 Use `LEFT ANALOG` to move the robot.
+Use `RIGHT ANALOG` to rotate the robot.
 
 #### Shooting
 Press `X` button to take a shot.

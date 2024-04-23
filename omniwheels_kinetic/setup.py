@@ -23,7 +23,8 @@ setup(
             'joystick_to_cmd_vel = omniwheels_kinetic.joystick_to_cmd_vel:main',
             'go_to_goal = omniwheels_kinetic.go_to_goal:main',
             'uwb = omniwheels_kinetic.uwb:main',
-            'robot_service_shoot = omniwheels_kinetic.service_node_test:main'
+            'robot_service_shoot = omniwheels_kinetic.service_node_test:main',
+            'robot_action_gotogoal = omniwheels_kinetic.action_node_test:main'
         ],
     },
 )

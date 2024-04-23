@@ -24,23 +24,23 @@ class GoToGoalServer(Node):
             self, GoToGoal, 'go_to_goal', self.execute_callback)
         
         # Rate
-        self.rate_ = self.create_rate(100)
+        self.rate_ = self.create_rate(10)
         
         # Node Starting Info
         self.get_logger().info(f'Node has been started')
 
 
     # Calculate Distance Beetwen Current Pose and Goal Pose
-    def euclidean_distance(self) -> float:
-        inner1 = (self.goal_pose_.x - self.robot_pose_.x) ** 2
-        inner2 = (self.goal_pose_.y - self.robot_pose_.y) ** 2
+    def euclidean_distance(self, goal_pose) -> float:
+        inner1 = (goal_pose.x - self.robot_pose_.x) ** 2
+        inner2 = (goal_pose.y - self.robot_pose_.y) ** 2
         return (inner1 + inner2) ** 0.5
 
 
     # Calculate Linear and Angular Velocity
     def velocity(
-            self, goal: float, robot: float, maxi: float = 1) -> float:
-        result = goal - robot
+            self, goal: float, robot: float, maxi: float = 1.0) -> float:
+        result = float(goal - robot)
 
         if result > maxi:
             return maxi
@@ -58,7 +58,7 @@ class GoToGoalServer(Node):
         self.get_logger().info('Getting a request')
 
         goal_pose: Pose2D = goal_handle.request.pose
-        distance = self.euclidean_distance()
+        distance = self.euclidean_distance(goal_pose)
         feedback_msg = GoToGoal.Feedback()
 
         cmd_vel = Twist()
@@ -66,22 +66,24 @@ class GoToGoalServer(Node):
         while distance > self.distance_tolerance_:
             cmd_vel.linear.x = self.velocity(goal_pose.x, self.robot_pose_.x)
             cmd_vel.linear.y = self.velocity(goal_pose.y, self.robot_pose_.y)
-            cmd_vel.linear.z = 0
+            cmd_vel.linear.z = 0.0
 
-            cmd_vel.angular.x = 0
-            cmd_vel.angular.x = 0
+            cmd_vel.angular.x = 0.0
+            cmd_vel.angular.x = 0.0
             cmd_vel.angular.z = self.velocity(goal_pose.theta,
-                                              self.robot_pose_.theta, 2)
+                                              self.robot_pose_.theta, 2.0)
 
-            distance = self.euclidean_distance()
+            distance = self.euclidean_distance(goal_pose)
             feedback_msg.distance = distance
             goal_handle.publish_feedback(feedback_msg)
             self.publisher_.publish(cmd_vel)
+            self.get_logger().info(f'{distance}')
             self.rate_.sleep()
 
         goal_handle.succeed()
         result = GoToGoal.Result()
         result.message = "Robot has arrived to desired goal position"
+        self.get_logger().info('Successfully executed action')
 
 
 

@@ -26,6 +26,8 @@ class UWB(Node):
         # Timer
         self.timer_ = self.create_timer(0.1, self.publisher_callback)
 
+        self.get_logger().info(f'Node has been started')
+
         
     # Getting Tag Position
     def tag_pos(self, da: float, db: float, dab: float) -> tuple[float]:

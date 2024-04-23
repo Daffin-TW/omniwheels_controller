@@ -1,5 +1,5 @@
-geometry_msgs/Pose2D
+geometry_msgs/Pose2D pose
 ---
-std_srvs/srv/Trigger
+string message
 ---
-geometry_msgs/Pose
+float32 distance

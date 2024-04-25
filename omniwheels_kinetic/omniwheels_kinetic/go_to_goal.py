@@ -55,35 +55,41 @@ class GoToGoalServer(Node):
 
     # Action Callback
     def execute_callback(self, goal_handle):
-        self.get_logger().info('Getting a request')
-
-        goal_pose: Pose2D = goal_handle.request.pose
-        distance = self.euclidean_distance(goal_pose)
-        feedback_msg = GoToGoal.Feedback()
-
-        cmd_vel = Twist()
-
-        while distance > self.distance_tolerance_:
-            cmd_vel.linear.x = self.velocity(goal_pose.x, self.robot_pose_.x)
-            cmd_vel.linear.y = self.velocity(goal_pose.y, self.robot_pose_.y)
-            cmd_vel.linear.z = 0.0
-
-            cmd_vel.angular.x = 0.0
-            cmd_vel.angular.x = 0.0
-            cmd_vel.angular.z = self.velocity(goal_pose.theta,
-                                              self.robot_pose_.theta, 2.0)
-
-            distance = self.euclidean_distance(goal_pose)
-            feedback_msg.distance = distance
-            goal_handle.publish_feedback(feedback_msg)
-            self.publisher_.publish(cmd_vel)
-            self.get_logger().info(f'{distance}')
-            self.rate_.sleep()
-
+        self.get_logger().info('Executing goal...')
         goal_handle.succeed()
         result = GoToGoal.Result()
-        result.message = "Robot has arrived to desired goal position"
-        self.get_logger().info('Successfully executed action')
+        return result
+
+    # def execute_callback(self, goal_handle):
+    #     self.get_logger().info('Getting a request')
+
+    #     goal_pose: Pose2D = goal_handle.request.pose
+    #     distance = self.euclidean_distance(goal_pose)
+    #     feedback_msg = GoToGoal.Feedback()
+
+    #     cmd_vel = Twist()
+
+    #     while distance > self.distance_tolerance_:
+    #         cmd_vel.linear.x = self.velocity(goal_pose.x, self.robot_pose_.x)
+    #         cmd_vel.linear.y = self.velocity(goal_pose.y, self.robot_pose_.y)
+    #         cmd_vel.linear.z = 0.0
+
+    #         cmd_vel.angular.x = 0.0
+    #         cmd_vel.angular.x = 0.0
+    #         cmd_vel.angular.z = self.velocity(goal_pose.theta,
+    #                                           self.robot_pose_.theta, 2.0)
+
+    #         distance = self.euclidean_distance(goal_pose)
+    #         feedback_msg.distance = distance
+    #         goal_handle.publish_feedback(feedback_msg)
+    #         self.publisher_.publish(cmd_vel)
+    #         self.get_logger().info(f'{distance}')
+    #         self.rate_.sleep()
+
+    #     goal_handle.succeed()
+    #     result = GoToGoal.Result()
+    #     result.message = "Robot has arrived to desired goal position"
+    #     self.get_logger().info('Successfully executed action')
 
 
 

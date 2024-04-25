@@ -99,7 +99,7 @@ class JoystickToVelocity(Node):
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
             'X': msg.buttons[2],
-            'A': msg.buttons[1]
+            'A': msg.buttons[0]
         }
         
         # Trigger Button to Shoot The Ball

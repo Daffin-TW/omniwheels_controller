@@ -139,7 +139,7 @@ class JoystickToVelocity(Node):
     def publish_charging_state_(self):
         msg = Bool()
         msg.data = self.charging_status_
-        self.pub_charge_(msg)
+        self.pub_charge_.publish(msg)
 
     # Publish Robot Velocity
     def publish_messages(self):

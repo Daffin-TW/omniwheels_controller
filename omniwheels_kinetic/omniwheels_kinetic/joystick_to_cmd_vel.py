@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import Bool
 from std_srvs.srv import Trigger
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
@@ -16,23 +17,26 @@ class JoystickToVelocity(Node):
         self.run_publish_status_ = False
         self.shooting_status_ = False
         self.request_status_ = False
+        self.charging_status_ = False
         self.future_ = None
         self.request_ = Trigger.Request()
         
         # Topics and Client Service
         self.subcriber_ = self.create_subscription(
             Joy, 'joy', self.callback_control, 10)
-        self.publisher_ = self.create_publisher(
+        self.pub_cmd_vel_ = self.create_publisher(
             Twist, 'cmd_vel', 10)
+        self.pub_charge_ = self.create_publisher(
+            Bool, 'charging', 10
+        )
         self.client_ = self.create_client(Trigger, 'ball_shoot')
 
         # Timer
         self.timer_status_timer_ = self.create_timer(0.5, self.status_shooting_callback)
-        self.timer_publish_cmd_vel_ = self.create_timer(0.08, self.publish_cmd_vel)
+        self.timer_publish_ = self.create_timer(0.08, self.publish_messages)
         
         # Start Info
         self.get_logger().info('Node has been started')
-
 
     # Normalize Robot Velocity
     def vector_normalization(self, x: float, y: float, omega: float) -> tuple:
@@ -45,7 +49,6 @@ class JoystickToVelocity(Node):
         else:
             return (0.0, 0.0, 0.0)
 
-
     # Converts Joystick Inputs to Robot Velocity
     def joy_to_cmd_vel(self, joystick: dict[str, float | int], scale: float) -> tuple[float]:
         v1 = joystick['LEFTY'] * scale
@@ -53,7 +56,6 @@ class JoystickToVelocity(Node):
         v3 = joystick['RIGHTX'] * scale * 6
         return (v1, v2, v3)
         
-
     # cmd_vel Info
     def cmd_vel_info(self):
         msg = '\n'.join([
@@ -63,7 +65,6 @@ class JoystickToVelocity(Node):
         ])
         # self.get_logger().info(msg)
         print('---', 'cmd_vel:', msg, sep='\n')
-
 
     # Request The Robot to Shoot
     def request_shooting(self):
@@ -77,8 +78,7 @@ class JoystickToVelocity(Node):
         else:
             self.get_logger().info('Service is not available')
 
-
-    # Timer Callback
+    # Getting Result From Service Server using Timer
     def status_shooting_callback(self):
         if self.request_status_ and self.future_.done():
             self.request_status_ = False
@@ -89,7 +89,6 @@ class JoystickToVelocity(Node):
             )
         else:
             None
-
 
     # Subscriber Callback
     def callback_control(self, msg: Joy):
@@ -110,6 +109,10 @@ class JoystickToVelocity(Node):
             else:
                 self.shooting_status_ = True
                 self.request_shooting()
+
+        # Trigger Button to Start Charging
+        if self.charging_status_ != bool(joystick['A']):
+            self.charging_status_ = bool(joystick['A'])
             
         # Determine The Robot Velocity Scaling
         if joystick['RIGHTSHOULDER']:
@@ -132,9 +135,16 @@ class JoystickToVelocity(Node):
         self.cmd_vel_ = self.joy_to_cmd_vel(joystick, scale)
         # self.cmd_vel_ = self.vector_normalization(*self.cmd_vel_)
 
+    # Publish Charging State
+    def publish_charging_state_(self):
+        msg = Bool()
+        msg.data = self.charging_status_
+        self.pub_charge_(msg)
 
     # Publish Robot Velocity
-    def publish_cmd_vel(self):
+    def publish_messages(self):
+        self.publish_charging_state_()
+
         if self.stopped_status_ and not self.run_publish_status_:
             return None
 
@@ -146,7 +156,7 @@ class JoystickToVelocity(Node):
         self.run_publish_status_ = False
 
         self.cmd_vel_info()
-        self.publisher_.publish(msg)
+        self.pub_cmd_vel_.publish(msg)
 
 
 def main(args=None):

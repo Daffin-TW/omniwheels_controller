@@ -149,8 +149,8 @@ class JoystickToVelocity(Node):
             return None
 
         msg = Twist()
-        msg.linear.x = self.cmd_vel_[0]
-        msg.linear.y = self.cmd_vel_[1]
+        msg.linear.x = self.cmd_vel_[1]
+        msg.linear.y = self.cmd_vel_[0]
         msg.angular.z = self.cmd_vel_[2]
 
         self.run_publish_status_ = False

@@ -59,8 +59,8 @@ class JoystickToVelocity(Node):
     # cmd_vel Info
     def cmd_vel_info(self):
         msg = '\n'.join([
-            f'vx: {self.cmd_vel_[0]}',
-            f'vy: {self.cmd_vel_[1]}',
+            f'vx: {self.cmd_vel_[1]}',
+            f'vy: {self.cmd_vel_[0]}',
             f'vw: {self.cmd_vel_[2]}'
         ])
         # self.get_logger().info(msg)

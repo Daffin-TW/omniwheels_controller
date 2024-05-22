@@ -1,0 +1,5 @@
+geometry_msgs/Pose2D pose
+---
+string message
+---
+float32 distance

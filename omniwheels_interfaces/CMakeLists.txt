@@ -16,6 +16,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/EncoderPulse.msg"
+  "msg/EncoderPulseStamped.msg"
   "msg/UWBAnchor.msg"
   "msg/WheelsVelocity3.msg"
   "action/GoToGoal.action"

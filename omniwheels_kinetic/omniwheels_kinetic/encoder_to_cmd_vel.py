@@ -2,8 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, TwistStamped
-from tf_transformations import euler_from_quaternion
-from omniwheels_interfaces.msg import WheelsVelocity3, EncoderPulse
+from omniwheels_interfaces.msg import WheelsVelocity3, EncoderPulseStamped
 
 
 class WheelVelToCmdVel(Node):
@@ -16,7 +15,7 @@ class WheelVelToCmdVel(Node):
         
         # Topics
         self.subscriber_ = self.create_subscription(
-            EncoderPulse, 'encoder_pulse', self.encoder_callback, 10)
+            EncoderPulseStamped, 'encoder_pulse', self.encoder_callback, 10)
         self.publisher_ = self.create_publisher(
             TwistStamped, 'cmd_vel_stamped', 10
         )
@@ -58,7 +57,8 @@ class WheelVelToCmdVel(Node):
         return msg
 
     # Pulse to Wheel's Velocities Converter
-    def pulse_to_wheel_vel(self, encoder_msg: list[float]) -> WheelsVelocity3:
+    def pulse_to_wheel_vel(
+            self, encoder_msg: EncoderPulseStamped) -> WheelsVelocity3:
         raise NotImplemented('Konversi pulse ke kecepatan roda')
     
     # Wheel's Velocities to Cmd Velocity Converter
@@ -84,9 +84,8 @@ class WheelVelToCmdVel(Node):
         print('---', 'cmd_vel:', msg, sep='\n')
 
     # Subscribe Callback
-    def encoder_callback(self, msg: EncoderPulse):
-        self.wheel_vel_ = self.pulse_to_wheel_vel(
-            [msg.wheel1, msg.wheel2, msg.wheel3])
+    def encoder_callback(self, msg: EncoderPulseStamped):
+        self.wheel_vel_ = self.pulse_to_wheel_vel(msg)
         cmd_vel = self.wheel_vel_to_cmd_vel(self.wheel_vel_)
         self.cmd_vel_ = self.twist_stamper(cmd_vel)
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import rclpy
-from math import degrees
 from rclpy.node import Node
-from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, TwistStamped
 from tf_transformations import euler_from_quaternion
 from omniwheels_interfaces.msg import WheelsVelocity3, EncoderPulse
@@ -17,11 +15,14 @@ class WheelVelToCmdVel(Node):
         self.wheel_vel_ = WheelsVelocity3()
         
         # Topics
-        self.subscriber_ = self.subscriptions(
+        self.subscriber_ = self.create_subscription(
             EncoderPulse, 'encoder_pulse', self.encoder_callback, 10)
-        self.publisher_ = self.publishers(
+        self.publisher_ = self.create_publisher(
             TwistStamped, 'cmd_vel_stamped', 10
         )
+
+        # Timer
+        self.pub_timer = self.create_timer(0.08, self.publish_messages)
 
     # Convert Regular Message to Ros Message
     def wheel_velocity3(self, Vm1: float, Vm2: float, 
@@ -46,6 +47,15 @@ class WheelVelToCmdVel(Node):
         msg.angular.z = Vw
 
         return msg
+    
+    def twist_stamper(self, twist_msg: Twist) -> TwistStamped:
+        msg = TwistStamped()
+
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = ''
+        msg.twist = twist_msg
+
+        return msg
 
     # Pulse to Wheel's Velocities Converter
     def pulse_to_wheel_vel(self, encoder_msg: list[float]) -> WheelsVelocity3:
@@ -61,14 +71,29 @@ class WheelVelToCmdVel(Node):
         Vy = -0.5*Vm1 - 0.5*Vm2 +Vm3
         Vw = Vm1 + Vm2 + Vm3
 
-        return self.cmd_vel_twist(Vx, Vy, degrees(Vw))
+        return self.cmd_vel_twist(Vx, Vy, Vw)
 
+    # cmd_vel Info
+    def cmd_vel_info(self):
+        msg = '\n'.join([
+            f'vx: {self.cmd_vel_.twist.linear.x}',
+            f'vy: {self.cmd_vel_.twist.linear.y}',
+            f'vw: {self.cmd_vel_.twist.angular.z}'
+        ])
+        # self.get_logger().info(msg)
+        print('---', 'cmd_vel:', msg, sep='\n')
 
     # Subscribe Callback
     def encoder_callback(self, msg: EncoderPulse):
         self.wheel_vel_ = self.pulse_to_wheel_vel(
             [msg.wheel1, msg.wheel2, msg.wheel3])
         cmd_vel = self.wheel_vel_to_cmd_vel(self.wheel_vel_)
+        self.cmd_vel_ = self.twist_stamper(cmd_vel)
+
+    # Publish Robot Velocity
+    def publish_messages(self):
+        self.cmd_vel_info()
+        self.publisher_.publish(self.cmd_vel_)
 
 
 def main(args=None):

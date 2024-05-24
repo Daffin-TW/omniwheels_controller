@@ -25,7 +25,8 @@ setup(
             'uwb = omniwheels_kinetic.uwb:main',
             'robot_service_shoot = omniwheels_kinetic.service_node_test:main',
             'robot_action_gotogoal = omniwheels_kinetic.action_node_test:main',
-            'encoder_to_cmd_vel = omniwheels_kinetic.encoder_to_cmd_vel:main'
+            'encoder_to_cmd_vel = omniwheels_kinetic.encoder_to_cmd_vel:main',
+            'odometry = omniwheels_kinetic.odometry:main'
         ],
     },
 )

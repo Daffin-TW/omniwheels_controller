@@ -93,9 +93,9 @@ class JoystickToVelocity(Node):
     # Subscriber Callback
     def callback_control(self, msg: Joy):
         joystick = {
-            'LEFTX': -msg.axes[0],
-            'LEFTY': -msg.axes[1],
-            'RIGHTX': -msg.axes[3],
+            'LEFTX': msg.axes[0],
+            'LEFTY': msg.axes[1],
+            'RIGHTX': msg.axes[3],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
             'X': msg.buttons[2],

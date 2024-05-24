@@ -97,7 +97,7 @@ class WheelVelToCmdVel(Node):
         return self.cmd_vel_twist(Vx, Vy, Vw)
         
     # cmd_vel_and_wheel_vel Info
-    def cmd_vel_and_wheel_vel(self):
+    def cmd_vel_and_wheel_vel_info(self):
         msg_wheel_vel = '\n'.join([
             f'  v1: {self.wheel_vel_.wheel1}',
             f'  v2: {self.wheel_vel_.wheel2}',
@@ -119,7 +119,7 @@ class WheelVelToCmdVel(Node):
 
     # Publish Robot Velocity
     def publish_messages(self):
-        self.cmd_vel_and_wheel_vel()
+        self.cmd_vel_and_wheel_vel_info()
         self.publisher_.publish(self.cmd_vel_)
 
 

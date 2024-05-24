@@ -81,6 +81,7 @@ class WheelVelToCmdVel(Node):
         self.wheel_vel_ = self.wheel_velocity3(*wheel_vels)
         cmd_vel = self.wheel_vel_to_cmd_vel(self.wheel_vel_)
         self.cmd_vel_ = self.twist_stamper(cmd_vel)
+        self.encoder_pulse_ = self.new_encoder_pulse_
 
     
     # Wheel's Velocities to Cmd Velocity Converter

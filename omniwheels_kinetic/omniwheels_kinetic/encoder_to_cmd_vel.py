@@ -91,7 +91,7 @@ class WheelVelToCmdVel(Node):
         Vm3 = wheel_vel.wheel3
 
         Vx = ((3**0.5)/2)*Vm1 - ((3**0.5)/2)*Vm2
-        Vy = -0.5*Vm1 - 0.5*Vm2 +Vm3
+        Vy = -0.5*Vm1 - 0.5*Vm2 + Vm3
         Vw = Vm1 + Vm2 + Vm3
 
         return self.cmd_vel_twist(Vx, Vy, Vw)

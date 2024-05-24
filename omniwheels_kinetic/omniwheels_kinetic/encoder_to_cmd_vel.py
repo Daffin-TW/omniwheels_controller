@@ -76,7 +76,7 @@ class WheelVelToCmdVel(Node):
         one_rotation = 134.4
         n_rotations = [encoder/one_rotation for encoder in encoders]
         wheel_vels = [
-            n_rotation*self.circumference_*0.1 for n_rotation in n_rotations]
+            n_rotation*self.circumference_*10 for n_rotation in n_rotations]
 
         self.wheel_vel_ = self.wheel_velocity3(*wheel_vels)
         cmd_vel = self.wheel_vel_to_cmd_vel(self.wheel_vel_)

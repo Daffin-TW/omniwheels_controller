@@ -75,9 +75,9 @@ class JoystickToVelocity(Node):
         max_v = self.max_cmd_vel_
         max_w = round(self.turn_speed_ / self.max_cmd_vel_, 3)
         cmd_vel_msg = '\n'.join([
-            f'vx: {self.cmd_vel_[0]}',
-            f'vy: {self.cmd_vel_[1]}',
-            f'vw: {self.cmd_vel_[2]}'
+            f'  vx: {self.cmd_vel_[0]}',
+            f'  vy: {self.cmd_vel_[1]}',
+            f'  vw: {self.cmd_vel_[2]}'
         ])
         # self.get_logger().info(msg)
         print('---', f'max linear speed: {max_v}', f'max angular speed {max_w}',

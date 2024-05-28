@@ -145,8 +145,10 @@ class JoystickToVelocity(Node):
                 self.scaling_status_ = True
                 if joystick['LEFTSHOULDER'] and self.max_cmd_vel_ > 0.5:
                     self.max_cmd_vel_ -= 0.5
+                    self.run_publish_status_ = True
                 elif joystick['RIGHTSHOULDER'] and self.max_cmd_vel_ < 5:
                     self.max_cmd_vel_ += 0.5
+                    self.run_publish_status_ = True
 
         # Converts Joystick's Inputs to Target Velocities
         if joystick['LEFTTRIGGER'] < 0.8 or joystick['RIGHTTRIGGER'] < 0.8:

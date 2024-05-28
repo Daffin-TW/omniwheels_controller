@@ -12,7 +12,9 @@ class JoystickToVelocity(Node):
         super().__init__('omniwheels_vel')
 
         # Constructor
-        self.cmd_vel_ = (float(), float(), float())
+        self.cmd_vel_ = (0.0, 0.0, 0.0)
+        self.target_cmd_vel_ = (0.0, 0.0, 0.0)
+        self.scaling_status_ = False
         self.stopped_status_ = True
         self.run_publish_status_ = False
         self.shooting_status_ = False
@@ -20,6 +22,9 @@ class JoystickToVelocity(Node):
         self.charging_status_ = False
         self.future_ = None
         self.request_ = Trigger.Request()
+        self.turn_speed_ = 5
+        self.acceleration_ = 0.05
+        self.max_cmd_vel_ = 1
         
         # Topics and Client Service
         self.subcriber_ = self.create_subscription(
@@ -32,7 +37,9 @@ class JoystickToVelocity(Node):
         self.client_ = self.create_client(Trigger, 'ball_shoot')
 
         # Timer
-        self.timer_status_timer_ = self.create_timer(0.5, self.status_shooting_callback)
+        self.timer_cmd_vel_ = self.create_timer(0.05, self.target_to_cmd_vel)
+        self.timer_status_timer_ = self.create_timer(
+            0.5, self.status_shooting_callback)
         self.timer_publish_ = self.create_timer(0.08, self.publish_messages)
         
         # Start Info
@@ -49,22 +56,32 @@ class JoystickToVelocity(Node):
         else:
             return (0.0, 0.0, 0.0)
 
-    # Converts Joystick Inputs to Robot Velocity
-    def joy_to_cmd_vel(self, joystick: dict[str, float | int], scale: float) -> tuple[float]:
-        v1 = joystick['LEFTY'] * scale
-        v2 = joystick['LEFTX'] * scale
-        v3 = joystick['RIGHTX'] * scale * 6
-        return (v1, v2, v3)
+    # Controls Robot Acceleration and Velocity
+    def target_to_cmd_vel(self):
+        vel = [*self.cmd_vel_]
+
+        for i in range(3):
+            if round(self.target_cmd_vel_[i], 2) == round(self.cmd_vel_[i], 2):
+                continue
+            elif self.target_cmd_vel_[i] > self.cmd_vel_[i]:
+                vel[i] = round(vel[i] + self.acceleration_, 3)
+            else:
+                vel[i] = round(vel[i] - self.acceleration_, 3)
+
+        self.cmd_vel_ = tuple(vel)
         
     # cmd_vel Info
     def cmd_vel_info(self):
-        msg = '\n'.join([
+        max_v = self.max_cmd_vel_
+        max_w = round(self.turn_speed_ / self.max_cmd_vel_, 3)
+        cmd_vel_msg = '\n'.join([
             f'vx: {self.cmd_vel_[0]}',
             f'vy: {self.cmd_vel_[1]}',
             f'vw: {self.cmd_vel_[2]}'
         ])
         # self.get_logger().info(msg)
-        print('---', 'cmd_vel:', msg, sep='\n')
+        print('---', f'max linear speed: {max_v}', f'max angular speed {max_w}',
+              'cmd_vel:', cmd_vel_msg, sep='\n')
 
     # Request The Robot to Shoot
     def request_shooting(self):
@@ -85,7 +102,8 @@ class JoystickToVelocity(Node):
             self.response_ = self.future_.result()
             self.get_logger().info('Service server has responded')
             print(
-                f'---\nService Respond:\n- Status\t: {self.response_.success}\n- Message\t: {self.response_.message}'
+                f'---\nService Respond:\n- Status\t: {self.response_.success}'
+                '\n- Message\t: {self.response_.message}'
             )
         else:
             None
@@ -96,6 +114,8 @@ class JoystickToVelocity(Node):
             'LEFTX': msg.axes[0],
             'LEFTY': msg.axes[1],
             'RIGHTX': msg.axes[3],
+            'LEFTTRIGGER': msg.axes[2],
+            'RIGHTTRIGGER': msg.axes[5],
             'LEFTSHOULDER': msg.buttons[4],
             'RIGHTSHOULDER': msg.buttons[5],
             'X': msg.buttons[2],
@@ -115,25 +135,34 @@ class JoystickToVelocity(Node):
             self.charging_status_ = bool(joystick['A'])
             
         # Determine The Robot Velocity Scaling
-        if joystick['RIGHTSHOULDER']:
-            scale = 1.0
-            self.stopped_status_ = False
+        condition = (self.scaling_status_ !=
+                     (joystick['LEFTSHOULDER'] or
+                     joystick['RIGHTSHOULDER']))
+        if condition:
+            if self.scaling_status_:
+                self.scaling_status_ = False
+            else:
+                self.scaling_status_ = True
+                if joystick['LEFTSHOULDER'] and self.max_cmd_vel_ > 0.5:
+                    self.max_cmd_vel_ -= 0.5
+                elif joystick['RIGHTSHOULDER'] and self.max_cmd_vel_ < 5:
+                    self.max_cmd_vel_ += 0.5
 
-        elif joystick['LEFTSHOULDER']:
-            scale = 0.7
+        # Converts Joystick's Inputs to Target Velocities
+        if joystick['LEFTTRIGGER'] < 0.8 or joystick['RIGHTTRIGGER'] < 0.8:
+            v1 = joystick['LEFTY'] * self.max_cmd_vel_
+            v2 = joystick['LEFTX'] * self.max_cmd_vel_
+            v3 = joystick['RIGHTX'] * self.turn_speed_ / self.max_cmd_vel_
+
+            self.target_cmd_vel_ = (v1, v2, v3)
             self.stopped_status_ = False
 
         elif not self.stopped_status_:
-            self.cmd_vel_ = (0.0, 0.0, 0.0)
-            self.stopped_status_ = True
+            self.target_cmd_vel_ = (0.0, 0.0, 0.0)
             self.run_publish_status_ = True
-            return None
-
-        else:
-            return None
-
-        self.cmd_vel_ = self.joy_to_cmd_vel(joystick, scale)
-        # self.cmd_vel_ = self.vector_normalization(*self.cmd_vel_)
+        
+        if sum(abs(v) for v in self.cmd_vel_) == 0:
+            self.stopped_status_ = True
 
     # Publish Charging State
     def publish_charging_state_(self):
@@ -143,6 +172,7 @@ class JoystickToVelocity(Node):
 
     # Publish Robot Velocity
     def publish_messages(self):
+        # self.debugging()
         self.publish_charging_state_()
 
         if self.stopped_status_ and not self.run_publish_status_:
@@ -157,6 +187,9 @@ class JoystickToVelocity(Node):
 
         self.cmd_vel_info()
         self.pub_cmd_vel_.publish(msg)
+
+    def debugging(self):
+        self.get_logger().info('Responding...')
 
 
 def main(args=None):

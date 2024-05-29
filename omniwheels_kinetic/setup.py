@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'joystick_to_cmd_vel = omniwheels_kinetic.joystick_to_cmd_vel:main',
+            'joystick_to_cmd_vel_constant = omniwheels_kinetic.joystick_to_cmd_vel_constant:main',
             'go_to_goal = omniwheels_kinetic.go_to_goal:main',
             'uwb = omniwheels_kinetic.uwb:main',
             'robot_service_shoot = omniwheels_kinetic.service_node_test:main',

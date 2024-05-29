@@ -147,6 +147,7 @@ class JoystickToVelocity(Node):
             self.run_publish_status_ = True
             self.stopped_status_ = False
 
+        # If the Robot Stops
         elif not self.stopped_status_:
             self.cmd_vel_ = (0.0, 0.0, 0.0)
             self.run_publish_status_ = True

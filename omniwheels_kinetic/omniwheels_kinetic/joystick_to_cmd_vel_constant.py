@@ -147,6 +147,8 @@ class JoystickToVelocity(Node):
         # Trigger Button to Catch a Ball
         if joystick['RIGHTTRIGGER'] < 0.8:
             self.catching_ball_status_ = True
+        else:
+            self.catching_ball_status_ = False
 
         # Robot Movement Safety
         if joystick['LEFTTRIGGER'] < 0.8:

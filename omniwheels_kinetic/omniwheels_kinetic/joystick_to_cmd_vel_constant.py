@@ -19,6 +19,7 @@ class JoystickToVelocity(Node):
         self.shooting_status_ = False
         self.request_status_ = False
         self.charging_status_ = False
+        self.catching_ball_status_ = False
         self.future_ = None
         self.request_ = Trigger.Request()
         self.turn_speed_ = 5
@@ -29,6 +30,8 @@ class JoystickToVelocity(Node):
             Joy, 'joy', self.callback_control, 10)
         self.pub_cmd_vel_ = self.create_publisher(
             Twist, 'cmd_vel', 10)
+        self.pub_catch_ball_ = self.create_publisher(
+            Bool, 'catch_ball', 10)
         self.pub_charge_ = self.create_publisher(
             Bool, 'charging', 10
         )
@@ -141,8 +144,12 @@ class JoystickToVelocity(Node):
                     self.max_cmd_vel_ += 0.5
                     self.run_publish_status_ = True
 
+        # Trigger Button to Catch a Ball
+        if joystick['RIGHTTRIGGER'] < 0.8:
+            self.catching_ball_status_ = True
+
         # Robot Movement Safety
-        if joystick['LEFTTRIGGER'] < 0.8 or joystick['RIGHTTRIGGER'] < 0.8:
+        if joystick['LEFTTRIGGER'] < 0.8:
             self.cmd_vel_ = self.joystick_to_cmd_vel(joystick)
             self.run_publish_status_ = True
             self.stopped_status_ = False
@@ -161,10 +168,17 @@ class JoystickToVelocity(Node):
         msg.data = self.charging_status_
         self.pub_charge_.publish(msg)
 
+    # Publish Catching Ball
+    def publish_catching_ball(self):
+        msg = Bool()
+        msg.data = self.catching_ball_status_
+        self.pub_catch_ball_.publish(msg)
+
     # Publish Robot Velocity
     def publish_messages(self):
         # self.debugging()
         self.publish_charging_state_()
+        self.publish_catching_ball()
 
         if self.stopped_status_ and not self.run_publish_status_:
             return None
